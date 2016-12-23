@@ -30,6 +30,8 @@ PRODUCT_PACKAGES := \
     EasterEgg \
     WallpaperCropper
 
+#    Music
+
 PRODUCT_PACKAGES += \
     clatd \
     clatd.conf \

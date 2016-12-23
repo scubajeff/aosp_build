@@ -59,4 +59,8 @@ PRODUCT_PACKAGES += \
     VpnDialogs \
     MmsService
 
+#    QuickSearchBox
+#    Browser2
+
+
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_base.mk)
