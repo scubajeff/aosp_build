@@ -461,10 +461,39 @@ def _BuildBootableImage(sourcedir, fs_config_file, info_dict=None,
     cmd.append("--base")
     cmd.append(open(fn).read().rstrip("\n"))
 
+  #+++>
+  fn = os.path.join(sourcedir, "tagsaddr")
+  if os.access(fn, os.F_OK):
+    cmd.append("--tags-addr")
+    cmd.append(open(fn).read().rstrip("\n"))
+
+  fn = os.path.join(sourcedir, "tags_offset")
+  if os.access(fn, os.F_OK):
+    cmd.append("--tags_offset")
+    cmd.append(open(fn).read().rstrip("\n"))
+
+  fn = os.path.join(sourcedir, "ramdisk_offset")
+  if os.access(fn, os.F_OK):
+    cmd.append("--ramdisk_offset")
+    cmd.append(open(fn).read().rstrip("\n"))
+
+  fn = os.path.join(sourcedir, "dt")
+  if os.access(fn, os.F_OK):
+    cmd.append("--dt")
+    cmd.append(fn)
+  #--->
+
   fn = os.path.join(sourcedir, "pagesize")
   if os.access(fn, os.F_OK):
+    #+++>
+    kernel_pagesize=open(fn).read().rstrip("\n")
+	#--->
     cmd.append("--pagesize")
-    cmd.append(open(fn).read().rstrip("\n"))
+	#+++>
+    cmd.append(kernel_pagesize)
+	#===>
+	#cmd.append(open(fn).read().rstrip("\n"))
+	#--->
 
   args = info_dict.get("mkbootimg_args", None)
   if args and args.strip():
@@ -484,6 +513,7 @@ def _BuildBootableImage(sourcedir, fs_config_file, info_dict=None,
   else:
     cmd.extend(["--output", img.name])
 
+  print "cmd", cmd
   p = Run(cmd, stdout=subprocess.PIPE)
   p.communicate()
   assert p.returncode == 0, "mkbootimg of %s image failed" % (
@@ -497,6 +527,8 @@ def _BuildBootableImage(sourcedir, fs_config_file, info_dict=None,
     cmd.extend([path, img.name,
                 info_dict["verity_key"] + ".pk8",
                 info_dict["verity_key"] + ".x509.pem", img.name])
+	
+    print "cmd_verify_key", cmd
     p = Run(cmd, stdout=subprocess.PIPE)
     p.communicate()
     assert p.returncode == 0, "boot_signer of %s image failed" % path
@@ -511,6 +543,7 @@ def _BuildBootableImage(sourcedir, fs_config_file, info_dict=None,
            info_dict["vboot_subkey"] + ".vbprivk",
            img_keyblock.name,
            img.name]
+    print "cmd_vboot", cmd
     p = Run(cmd, stdout=subprocess.PIPE)
     p.communicate()
     assert p.returncode == 0, "vboot_signer of %s image failed" % path
@@ -525,6 +558,8 @@ def _BuildBootableImage(sourcedir, fs_config_file, info_dict=None,
   if has_ramdisk:
     ramdisk_img.close()
   img.close()
+
+  print "BuildBootableImage <-"
 
   return data
 
@@ -1395,8 +1430,8 @@ class BlockDifference(object):
     if progress:
       script.ShowProgress(progress, 0)
     self._WriteUpdate(script, output_zip)
-    if OPTIONS.verify:
-      self._WritePostInstallVerifyScript(script)
+    #if OPTIONS.verify:
+    #  self._WritePostInstallVerifyScript(script)
 
   def WriteStrictVerifyScript(self, script):
     """Verify all the blocks in the care_map, including clobbered blocks.
@@ -1556,11 +1591,18 @@ class BlockDifference(object):
     else:
       code = ErrorCode.VENDOR_UPDATE_FAILURE
 
+#+++
     call = ('block_image_update("{device}", '
             'package_extract_file("{partition}.transfer.list"), '
-            '"{partition}.new.dat", "{partition}.patch.dat") ||\n'
-            '  abort("E{code}: Failed to update {partition} image.");'.format(
+            '"{partition}.new.dat", "{partition}.patch.dat");'.format(
                 device=self.device, partition=self.partition, code=code))
+#===
+#    call = ('block_image_update("{device}", '
+#            'package_extract_file("{partition}.transfer.list"), '
+#            '"{partition}.new.dat", "{partition}.patch.dat") ||\n'
+#            '  abort("E{code}: Failed to update {partition} image.");'.format(
+#                device=self.device, partition=self.partition, code=code))
+#---
     script.AppendExtra(script.WordWrap(call))
 
   def _HashBlocks(self, source, ranges): # pylint: disable=no-self-use

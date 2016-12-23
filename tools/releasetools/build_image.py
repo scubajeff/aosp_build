@@ -440,6 +440,7 @@ def BuildImage(in_dir, prop_dict, out_file, target_out=None):
     if reserved_blocks and fs_type.startswith("ext4"):
       (ext4fs_output, exit_code) = RunCommand(build_command)
     else:
+      print(build_command)
       (_, exit_code) = RunCommand(build_command)
   finally:
     if in_dir != origin_in:

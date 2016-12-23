@@ -529,6 +529,9 @@ else
 MKBOOTIMG := $(BOARD_CUSTOM_MKBOOTIMG)
 endif
 APICHECK := $(HOST_OUT_EXECUTABLES)/apicheck$(HOST_EXECUTABLE_SUFFIX)
+#+++>
+MKIMAGE :=  $(HOST_OUT_EXECUTABLES)/mkimage$(HOST_EXECUTABLE_SUFFIX)
+#--->
 FS_GET_STATS := $(HOST_OUT_EXECUTABLES)/fs_get_stats$(HOST_EXECUTABLE_SUFFIX)
 MAKE_EXT4FS := $(HOST_OUT_EXECUTABLES)/make_ext4fs$(HOST_EXECUTABLE_SUFFIX)
 BLK_ALLOC_TO_BASE_FS := $(HOST_OUT_EXECUTABLES)/blk_alloc_to_base_fs$(HOST_EXECUTABLE_SUFFIX)
@@ -636,7 +639,7 @@ $(warning COMMON_GLOBAL_C(PP)FLAGS changed)
 $(info *** Device configurations are no longer allowed to change the global flags.)
 $(info *** COMMON_GLOBAL_CFLAGS: $(COMMON_GLOBAL_CFLAGS))
 $(info *** COMMON_GLOBAL_CPPFLAGS: $(COMMON_GLOBAL_CPPFLAGS))
-$(error bailing...)
+#$(error bailing...)
 endif
 
 # These can be changed to modify both host and device modules.
