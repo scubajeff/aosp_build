@@ -4,6 +4,42 @@
 # intermedites-dir-for
 LOCAL_PATH := $(BUILD_SYSTEM)
 
+ifneq ($(BUILD_WITH_COLORS),0)
+# Define colors
+  CL_RST="\033[0m"
+  CL_BLK="\033[30m"
+  CL_RED="\033[31m"
+  CL_GRN="\033[32m"
+  CL_YLW="\033[33m"
+  CL_BLU="\033[34m"
+  CL_MAG="\033[35m"
+  CL_CYN="\033[36m"
+  CL_WHT="\033[37m"
+  CL_BLD_BLK="\033[1m\033[30m"
+  CL_BLD_RED="\033[1m\033[31m"
+  CL_BLD_GRN="\033[1m\033[32m"
+  CL_BLD_YLW="\033[1m\033[33m"
+  CL_BLD_BLU="\033[1m\033[34m"
+  CL_BLD_MAG="\033[1m\033[35m"
+  CL_BLD_CYN="\033[1m\033[36m"
+  CL_BLD_WHT="\033[1m\033[37m"
+# Map colors
+  # host
+  PRT_HST := $(CL_YLW)
+  # target
+  PRT_TGT := $(CL_CYN)
+  # install/copy
+  PRT_INS := $(CL_GRN)
+  # FS/images
+  PRT_IMG := $(CL_GRN)
+  # import/export/includes/notice
+  PRT_IMP := $(CL_GRN)
+  # delete
+  PRT_DEL := $(CL_RED)
+  # complete msg
+  PRT_CPL := $(CL_BLD_GRN)
+endif
+
 # Pick a reasonable string to use to identify files.
 ifneq "" "$(filter eng.%,$(BUILD_NUMBER))"
   # BUILD_NUMBER has a timestamp in it, which means that
