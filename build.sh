@@ -38,7 +38,7 @@ do
   lunch aosp_${product}-user$DEBUG
   make -j 16 otapackage 2>&1 | tee build.log
   
-  ROM_ORG="aosp_${product}-ota-eng.ubuntu.zip"
+  ROM_ORG="aosp_${product}-ota-eng.jeff.zip"
   ROM="aosp-`grep "ro.build.version.incremental" out/target/product/${product}/system/build.prop | sed "s/ro.build.version.incremental=//g"`.zip"
   
   mv out/target/product/${product}/${ROM_ORG} out/target/product/${product}/${ROM}
