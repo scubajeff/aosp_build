@@ -5,6 +5,7 @@ DEBUG="debug"
 
 GCC_PATH=`pwd`/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin
 export PATH=$GCC_PATH:$PATH
+OUT_DIR=$OUT_DIR_COMMON_BASE/nougat
 
 #export USE_CCACHE=1
 #export CCACHE_DIR=`pwd`/.ccache
@@ -39,8 +40,8 @@ do
   make -j 16 otapackage 2>&1 | tee build.log
   
   ROM_ORG="aosp_${product}-ota-eng.jeff.zip"
-  ROM="aosp-`grep "ro.build.version.incremental" out/target/product/${product}/system/build.prop | sed "s/ro.build.version.incremental=//g"`.zip"
+  ROM="aosp-`grep "ro.build.version.incremental" $OUT_DIR/target/product/${product}/system/build.prop | sed "s/ro.build.version.incremental=//g"`.zip"
   
-  mv out/target/product/${product}/${ROM_ORG} out/target/product/${product}/${ROM}
-  md5sum out/target/product/${product}/${ROM} > out/target/product/${product}/${ROM}.md5sum
+  mv $OUT_DIR/target/product/${product}/${ROM_ORG} $OUT_DIR/target/product/${product}/${ROM}
+  md5sum $OUT_DIR/target/product/${product}/${ROM} > $OUT_DIR/target/product/${product}/${ROM}.md5sum
 done
