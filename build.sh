@@ -40,7 +40,7 @@ do
   make -j 16 otapackage 2>&1 | tee build.log
   
   ROM_ORG="aosp_${product}-ota-eng.jeff.zip"
-  ROM="aosp-`grep "ro.build.version.incremental" $OUT_DIR/target/product/${product}/system/build.prop | sed "s/ro.build.version.incremental=//g"`.zip"
+  ROM="aosp-${product}-`grep "ro.build.version.incremental" $OUT_DIR/target/product/${product}/system/build.prop | sed "s/ro.build.version.incremental=//g"`.zip"
   
   mv $OUT_DIR/target/product/${product}/${ROM_ORG} $OUT_DIR/target/product/${product}/${ROM}
   md5sum $OUT_DIR/target/product/${product}/${ROM} > $OUT_DIR/target/product/${product}/${ROM}.md5sum
