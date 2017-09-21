@@ -735,9 +735,16 @@ GLOBAL_CFLAGS_NO_OVERRIDE := \
     -Werror=int-to-pointer-cast \
     -Werror=pointer-to-int-cast \
 
-GLOBAL_CLANG_CFLAGS_NO_OVERRIDE := \
+# Bug: http://b/29823425 Disable -Wnull-dereference until the
+# new cases detected by this warning in Clang r271374 are
+# fixed.
+#GLOBAL_CLANG_CFLAGS_NO_OVERRIDE := \
     -Werror=address-of-temporary \
     -Werror=null-dereference \
+    -Werror=return-type \
+
+GLOBAL_CLANG_CFLAGS_NO_OVERRIDE := \
+    -Werror=address-of-temporary \
     -Werror=return-type \
 
 GLOBAL_CPPFLAGS_NO_OVERRIDE :=
