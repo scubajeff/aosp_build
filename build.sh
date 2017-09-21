@@ -5,7 +5,7 @@ DEBUG="debug"
 
 GCC_PATH=`pwd`/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin
 export PATH=$GCC_PATH:$PATH
-OUT_DIR=$OUT_DIR_COMMON_BASE/nougat
+OUT_DIR=$OUT_DIR_COMMON_BASE/oreo
 
 #export USE_CCACHE=1
 #export CCACHE_DIR=`pwd`/.ccache

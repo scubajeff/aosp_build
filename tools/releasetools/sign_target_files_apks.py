@@ -93,6 +93,7 @@ import errno
 import os
 import re
 import shutil
+import stat
 import subprocess
 import tempfile
 import zipfile
@@ -191,6 +192,9 @@ def ProcessTargetFiles(input_tf_zip, output_tf_zip, misc_info,
 
   # tmpdir will only be used to regenerate the recovery-from-boot patch.
   tmpdir = tempfile.mkdtemp()
+  # We're not setting the permissions precisely as in attr, because that work
+  # will be handled by mkbootfs (using the values from the canned or the
+  # compiled-in fs_config).
   def write_to_temp(fn, attr, data):
     fn = os.path.join(tmpdir, fn)
     if fn.endswith("/"):
@@ -201,7 +205,7 @@ def ProcessTargetFiles(input_tf_zip, output_tf_zip, misc_info,
       if d and not os.path.exists(d):
         os.makedirs(d)
 
-      if attr >> 16 == 0xa1ff:
+      if stat.S_ISLNK(attr >> 16):
         os.symlink(data, fn)
       else:
         with open(fn, "wb") as f:
@@ -231,15 +235,21 @@ def ProcessTargetFiles(input_tf_zip, output_tf_zip, misc_info,
     # System properties.
     elif info.filename in ("SYSTEM/build.prop",
                            "VENDOR/build.prop",
-                           "BOOT/RAMDISK/default.prop",
-                           "ROOT/default.prop",
-                           "RECOVERY/RAMDISK/default.prop"):
+                           "SYSTEM/etc/prop.default",
+                           "BOOT/RAMDISK/default.prop",  # legacy
+                           "ROOT/default.prop",  # legacy
+                           "RECOVERY/RAMDISK/prop.default",
+                           "RECOVERY/RAMDISK/default.prop"):  # legacy
       print "rewriting %s:" % (info.filename,)
-      new_data = RewriteProps(data, misc_info)
+      if stat.S_ISLNK(info.external_attr >> 16):
+        new_data = data
+      else:
+        new_data = RewriteProps(data, misc_info)
       common.ZipWriteStr(output_tf_zip, out_info, new_data)
-      if info.filename in ("BOOT/RAMDISK/default.prop",
-                           "ROOT/default.prop",
-                           "RECOVERY/RAMDISK/default.prop"):
+      if info.filename in ("BOOT/RAMDISK/default.prop",  # legacy
+                           "ROOT/default.prop",  # legacy
+                           "RECOVERY/RAMDISK/prop.default",
+                           "RECOVERY/RAMDISK/default.prop"):  # legacy
         write_to_temp(info.filename, info.external_attr, new_data)
 
     elif info.filename.endswith("mac_permissions.xml"):
@@ -280,7 +290,7 @@ def ProcessTargetFiles(input_tf_zip, output_tf_zip, misc_info,
       pass
 
     # Skip the care_map as we will regenerate the system/vendor images.
-    elif (info.filename == "META/care_map.txt"):
+    elif info.filename == "META/care_map.txt":
       pass
 
     # Copy BOOT/, RECOVERY/, META/, ROOT/ to rebuild recovery patch. This case
@@ -553,9 +563,12 @@ def ReplaceVerityKeyId(targetfile_input_zip, targetfile_output_zip, keypath):
   for param in in_cmdline.split():
     if "veritykeyid" in param:
       # extract keyid using openssl command
-      p = common.Run(["openssl", "x509", "-in", keypath, "-text"], stdout=subprocess.PIPE)
+      p = common.Run(
+          ["openssl", "x509", "-in", keypath, "-text"],
+          stdout=subprocess.PIPE)
       keyid, stderr = p.communicate()
-      keyid = re.search(r'keyid:([0-9a-fA-F:]*)', keyid).group(1).replace(':', '').lower()
+      keyid = re.search(
+          r'keyid:([0-9a-fA-F:]*)', keyid).group(1).replace(':', '').lower()
       print "Replacing verity keyid with %s error=%s" % (keyid, stderr)
       out_cmdline.append("veritykeyid=id:%s" % (keyid,))
     else:
@@ -592,7 +605,6 @@ def GetApiLevelAndCodename(input_tf_zip):
   codename = None
   for line in data.split("\n"):
     line = line.strip()
-    original_line = line
     if line and line[0] != '#' and "=" in line:
       key, value = line.split("=", 1)
       key = key.strip()
@@ -615,7 +627,6 @@ def GetCodenameToApiLevelMap(input_tf_zip):
   codenames = None
   for line in data.split("\n"):
     line = line.strip()
-    original_line = line
     if line and line[0] != '#' and "=" in line:
       key, value = line.split("=", 1)
       key = key.strip()
@@ -698,12 +709,8 @@ def main(argv):
   CheckAllApksSigned(input_zip, apk_key_map)
 
   key_passwords = common.GetKeyPasswords(set(apk_key_map.values()))
-  platform_api_level, platform_codename = GetApiLevelAndCodename(input_zip)
+  platform_api_level, _ = GetApiLevelAndCodename(input_zip)
   codename_to_api_level_map = GetCodenameToApiLevelMap(input_zip)
-  # Android N will be API Level 24, but isn't yet.
-  # TODO: Remove this workaround once Android N is officially API Level 24.
-  if platform_api_level == 23 and platform_codename == "N":
-    platform_api_level = 24
 
   ProcessTargetFiles(input_zip, output_zip, misc_info,
                      apk_key_map, key_passwords,
